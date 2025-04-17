@@ -53,8 +53,10 @@ class _HomePageState extends State<HomePage> {
               if (nameCtrl.text.isEmpty || idCtrl.text.isEmpty) return;
               await storage.add(SpiderScanner(id: idCtrl.text, name: nameCtrl.text));
               await _loadScanners();
-              Navigator.pop(ctx);
-            },
+              if(context.mounted) {
+                Navigator.pop(ctx);
+              }
+              },
             child: const Text("Add"),
           )
         ],
@@ -80,8 +82,10 @@ class _HomePageState extends State<HomePage> {
               final updated = SpiderScanner(id: scanner.id, name: nameCtrl.text);
               await storage.update(updated);
               await _loadScanners();
-              Navigator.pop(ctx);
-            },
+              if(context.mounted) {
+                Navigator.pop(ctx);
+              }
+              },
             child: const Text("Save"),
           )
         ],

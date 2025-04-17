@@ -121,10 +121,11 @@ class _LoginPageState extends State<LoginPage> {
                               setState(() => errorMessage = 'Incorrect email or password');
                               return;
                             }
-
-                            setState(() => errorMessage = null);
-                            Navigator.pushReplacementNamed(context, '/home');
-                          },
+                            if(context.mounted) {
+                              setState(() => errorMessage = null);
+                              Navigator.pushReplacementNamed(context, '/home');
+                            }
+                            },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.greenAccent[400],
                             padding: const EdgeInsets.symmetric(vertical: 16),

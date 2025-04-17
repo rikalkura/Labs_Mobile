@@ -147,8 +147,11 @@ class _RegisterPageState extends State<RegisterPage> {
                             });
 
                             setState(() => errorMessage = null);
-                            Navigator.pushReplacementNamed(context, '/');
-                          },
+
+                            if(context.mounted) {
+                              Navigator.pushReplacementNamed(context, '/');
+                            }
+                            },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.greenAccent[400],
                             padding: const EdgeInsets.symmetric(vertical: 16),
