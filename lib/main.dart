@@ -38,9 +38,7 @@ class MyApp extends StatelessWidget {
 
           final (isLoggedIn, isOnline) = snapshot.data!;
 
-          // Якщо залогінено, але немає Інтернету — покажемо попередження
           if (isLoggedIn && !isOnline) {
-            // використаємо post frame callback щоб не зламати build
             WidgetsBinding.instance.addPostFrameCallback((_) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(

@@ -110,21 +110,20 @@ class _LoginPageState extends State<LoginPage> {
                           onPressed: () async {
                             final isOnline = await connectivity.isConnected();
                             if (!isOnline) {
-                              if (!mounted) return;
+                              if (context.mounted){
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text("No internet connection"),
                                   backgroundColor: Colors.orange,
                                 ),
                               );
+                              }
                               return;
                             }
 
                             final enteredEmail = emailController.text.trim();
                             final enteredPassword = passwordController.text;
                             final savedUser = await storage.getUser();
-
-                            if (!mounted) return;
 
                             if (savedUser == null) {
                               setState(() => errorMessage = 'User not found. Please register.');
@@ -136,10 +135,11 @@ class _LoginPageState extends State<LoginPage> {
                               setState(() => errorMessage = 'Incorrect email or password');
                               return;
                             }
-
-                            setState(() => errorMessage = null);
-                            Navigator.pushReplacementNamed(context, '/home');
-                          },
+                            if (context.mounted) {
+                              setState(() => errorMessage = null);
+                              Navigator.pushReplacementNamed(context, '/home');
+                            }
+                            },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.greenAccent[400],
                             padding: const EdgeInsets.symmetric(vertical: 16),
