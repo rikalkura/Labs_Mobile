@@ -9,20 +9,27 @@ class WeeklyChart extends StatelessWidget {
     final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     final max = values.reduce((a, b) => a > b ? a : b);
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    final columnWidth = screenWidth / (days.length * 2);
+    final maxBarHeight = screenHeight * 0.2;
+    final fontSize = screenWidth < 360 ? 10.0 : 12.0;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: List.generate(days.length, (index) {
-          final heightFactor = values[index] / max;
+          final heightFactor = max == 0 ? 0.0 : values[index] / max;
 
           return Column(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               Container(
-                width: 20,
-                height: 80 * heightFactor,
+                width: columnWidth,
+                height: maxBarHeight * heightFactor,
                 decoration: BoxDecoration(
                   color: Colors.grey[800],
                   borderRadius: BorderRadius.circular(10),
@@ -31,9 +38,9 @@ class WeeklyChart extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 days[index],
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white70,
-                  fontSize: 12,
+                  fontSize: fontSize,
                 ),
               ),
             ],

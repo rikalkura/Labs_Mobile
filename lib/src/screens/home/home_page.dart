@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../../widget/action_buttons.dart';
 import '../../widget/weekly_chart.dart';
 
@@ -8,11 +7,15 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isWide = screenWidth > 600;
+    final horizontalPadding = isWide ? screenWidth * 0.2 : 16.0;
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
-        automaticallyImplyLeading: false, // Прибрати стрілку "назад"
+        automaticallyImplyLeading: false,
         centerTitle: false,
         title: InkWell(
           onTap: () {
@@ -33,17 +36,16 @@ class HomePage extends StatelessWidget {
             ],
           ),
         ),
-        // Видалив actions з кнопкою Logout
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Spider Scan Status',
               style: TextStyle(
-                fontSize: 30,
+                fontSize: isWide ? 36 : 28,
                 fontWeight: FontWeight.w300,
                 letterSpacing: 1.2,
                 color: Colors.white,
@@ -60,7 +62,6 @@ class HomePage extends StatelessWidget {
               padding: const EdgeInsets.all(24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -79,16 +80,16 @@ class HomePage extends StatelessWidget {
                   const Text('Total Scans',
                       style: TextStyle(fontSize: 18, color: Colors.white54)),
                   const SizedBox(height: 16),
-                  const Text(
+                  Text(
                     '174',
                     style: TextStyle(
-                      fontSize: 64,
+                      fontSize: isWide ? 72 : 56,
                       fontWeight: FontWeight.w400,
                       color: Colors.white,
                     ),
                   ),
                   const SizedBox(height: 24),
-                  WeeklyChart(values: [20, 45, 30, 60, 25, 40, 35]),
+                  const WeeklyChart(values: [20, 45, 30, 60, 25, 40, 35]),
                   const SizedBox(height: 12),
                   const Text(
                     'Last updated: 2 mins ago',
@@ -100,10 +101,10 @@ class HomePage extends StatelessWidget {
 
             const SizedBox(height: 30),
 
-            const Text(
+            Text(
               'Actions',
               style: TextStyle(
-                fontSize: 18,
+                fontSize: isWide ? 22 : 18,
                 color: Colors.white70,
               ),
             ),
