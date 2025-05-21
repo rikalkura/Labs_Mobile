@@ -1,7 +1,20 @@
 import 'package:flutter/material.dart';
 
-class LoginPage extends StatelessWidget {
+import '../../repo/implementation/user_repository_local.dart';
+
+class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  final storage = SharedPrefsUserStorage();
+
+  String? errorMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -57,6 +70,7 @@ class LoginPage extends StatelessWidget {
                         hint: 'Email',
                         icon: Icons.email_outlined,
                         obscureText: false,
+                        controller: emailController,
                       ),
                       const SizedBox(height: 20),
 
@@ -64,6 +78,7 @@ class LoginPage extends StatelessWidget {
                         hint: 'Password',
                         icon: Icons.lock_outline,
                         obscureText: true,
+                        controller: passwordController,
                       ),
                       const SizedBox(height: 12),
 
@@ -77,12 +92,37 @@ class LoginPage extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 16),
 
+                      if (errorMessage != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12.0),
+                          child: Text(
+                            errorMessage!,
+                            style: const TextStyle(color: Colors.redAccent),
+                          ),
+                        ),
+
+                      const SizedBox(height: 16),
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () {
+                          onPressed: () async {
+                            final enteredEmail = emailController.text.trim();
+                            final enteredPassword = passwordController.text;
+
+                            final savedUser = await storage.getUser();
+                            if (savedUser == null) {
+                              setState(() => errorMessage = 'Користувача не знайдено. Зареєструйтесь.');
+                              return;
+                            }
+
+                            if (savedUser['email'] != enteredEmail ||
+                                savedUser['password'] != enteredPassword) {
+                              setState(() => errorMessage = 'Невірна пошта або пароль');
+                              return;
+                            }
+
+                            setState(() => errorMessage = null);
                             Navigator.pushReplacementNamed(context, '/home');
                           },
                           style: ElevatedButton.styleFrom(
@@ -98,8 +138,8 @@ class LoginPage extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 20),
 
+                      const SizedBox(height: 20),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -136,8 +176,10 @@ class LoginPage extends StatelessWidget {
     required String hint,
     required IconData icon,
     required bool obscureText,
+    required TextEditingController controller,
   }) {
     return TextField(
+      controller: controller,
       obscureText: obscureText,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(

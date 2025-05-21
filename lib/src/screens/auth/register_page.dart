@@ -1,7 +1,24 @@
 import 'package:flutter/material.dart';
 
-class RegisterPage extends StatelessWidget {
+import '../../repo/implementation/user_repository_local.dart';
+import '../../utils/validators.dart';
+
+class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
+
+  @override
+  State<RegisterPage> createState() => _RegisterPageState();
+}
+
+class _RegisterPageState extends State<RegisterPage> {
+  final nameController = TextEditingController();
+  final dobController = TextEditingController();
+  final addressController = TextEditingController();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  final storage = SharedPrefsUserStorage();
+
+  String? errorMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -49,6 +66,7 @@ class RegisterPage extends StatelessWidget {
                         hint: 'Full Name',
                         icon: Icons.person_outline,
                         obscureText: false,
+                        controller: nameController,
                       ),
                       const SizedBox(height: 20),
 
@@ -56,6 +74,7 @@ class RegisterPage extends StatelessWidget {
                         hint: 'Date of Birth (DD/MM/YYYY)',
                         icon: Icons.cake_outlined,
                         obscureText: false,
+                        controller: dobController,
                       ),
                       const SizedBox(height: 20),
 
@@ -63,6 +82,7 @@ class RegisterPage extends StatelessWidget {
                         hint: 'Address',
                         icon: Icons.location_on_outlined,
                         obscureText: false,
+                        controller: addressController,
                       ),
                       const SizedBox(height: 20),
 
@@ -70,6 +90,7 @@ class RegisterPage extends StatelessWidget {
                         hint: 'Email',
                         icon: Icons.email_outlined,
                         obscureText: false,
+                        controller: emailController,
                       ),
                       const SizedBox(height: 20),
 
@@ -77,13 +98,55 @@ class RegisterPage extends StatelessWidget {
                         hint: 'Password',
                         icon: Icons.lock_outline,
                         obscureText: true,
+                        controller: passwordController,
                       ),
                       const SizedBox(height: 20),
+
+                      if (errorMessage != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12.0),
+                          child: Text(
+                            errorMessage!,
+                            style: const TextStyle(color: Colors.redAccent),
+                          ),
+                        ),
 
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () {
+                          onPressed: () async {
+                            final name = nameController.text.trim();
+                            final dob = dobController.text.trim();
+                            final address = addressController.text.trim();
+                            final email = emailController.text.trim();
+                            final password = passwordController.text;
+
+                            final nameError = Validators.validateName(name);
+                            final emailError = Validators.validateEmail(email);
+                            final passwordError = Validators.validatePassword(password);
+
+                            if (nameError != null) {
+                              setState(() => errorMessage = nameError);
+                              return;
+                            }
+                            if (emailError != null) {
+                              setState(() => errorMessage = emailError);
+                              return;
+                            }
+                            if (passwordError != null) {
+                              setState(() => errorMessage = passwordError);
+                              return;
+                            }
+
+                            await storage.saveUser({
+                              'name': name,
+                              'dob': dob,
+                              'address': address,
+                              'email': email,
+                              'password': password,
+                            });
+
+                            setState(() => errorMessage = null);
                             Navigator.pushReplacementNamed(context, '/');
                           },
                           style: ElevatedButton.styleFrom(
@@ -135,8 +198,10 @@ class RegisterPage extends StatelessWidget {
     required String hint,
     required IconData icon,
     required bool obscureText,
+    required TextEditingController controller,
   }) {
     return TextField(
+      controller: controller,
       obscureText: obscureText,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(

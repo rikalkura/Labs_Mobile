@@ -1,7 +1,55 @@
 import 'package:flutter/material.dart';
 
-class ProfilePage extends StatelessWidget {
+import '../../repo/implementation/user_repository_local.dart';
+
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  final storage =   SharedPrefsUserStorage();
+
+  Map<String, String>? userData;
+
+  final nameController = TextEditingController();
+  final dobController = TextEditingController();
+  final addressController = TextEditingController();
+  final emailController = TextEditingController();
+
+  bool isEditing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUser();
+  }
+
+  Future<void> _loadUser() async {
+    final data = await storage.getUser();
+    setState(() {
+      userData = data;
+      nameController.text = data?['name'] ?? '';
+      dobController.text = data?['dob'] ?? '';
+      addressController.text = data?['address'] ?? '';
+      emailController.text = data?['email'] ?? '';
+    });
+  }
+
+  Future<void> _saveChanges() async {
+    await storage.updateUser({
+      'name': nameController.text.trim(),
+      'dob': dobController.text.trim(),
+      'address': addressController.text.trim(),
+      'email': emailController.text.trim(),
+    });
+    setState(() {
+      isEditing = false;
+    });
+    await _loadUser();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,15 +62,7 @@ class ProfilePage extends StatelessWidget {
           children: const [
             Icon(Icons.person, color: Colors.greenAccent, size: 28),
             SizedBox(width: 8),
-            Text(
-              'Profile',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w400,
-                color: Colors.white,
-                letterSpacing: 1.1,
-              ),
-            ),
+            Text('Profile', style: TextStyle(fontSize: 22, color: Colors.white)),
           ],
         ),
         actions: [
@@ -30,12 +70,15 @@ class ProfilePage extends StatelessWidget {
             icon: const Icon(Icons.logout_rounded, color: Colors.white),
             tooltip: 'Logout',
             onPressed: () {
-              Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+              storage.deleteUser();
+              Navigator.pushNamedAndRemoveUntil(context, '/', (_) => false);
             },
           ),
         ],
       ),
-      body: Container(
+      body: userData == null
+          ? const Center(child: CircularProgressIndicator())
+          : Container(
         width: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -54,53 +97,53 @@ class ProfilePage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 24),
-                Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.greenAccent, width: 3),
-                  ),
-                  child: CircleAvatar(
-                    radius: screenWidth < 500 ? 50 : 60,
-                    backgroundColor: Colors.grey[800],
-                    child: const Icon(Icons.person_outline, size: 60, color: Colors.grey),
-                  ),
+                CircleAvatar(
+                  radius: screenWidth < 500 ? 50 : 60,
+                  backgroundColor: Colors.grey[800],
+                  child: const Icon(Icons.person_outline, size: 60, color: Colors.grey),
                 ),
                 const SizedBox(height: 20),
-                const Text(
-                  'Andrii Morozov',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
+
+                isEditing
+                    ? _buildEditableField('Full Name', nameController)
+                    : _buildProfileText(nameController.text, 28, bold: true),
+
                 const SizedBox(height: 8),
-                const Text(
-                  'andrii.morozov.ir.2022@lpnu.ua',
-                  style: TextStyle(fontSize: 16, color: Colors.white54),
-                ),
+                isEditing
+                    ? _buildEditableField('Email', emailController)
+                    : _buildProfileText(emailController.text, 16),
+
                 const SizedBox(height: 32),
-                _buildProfileCard(Icons.phone, 'Phone', '+380 96 844 23 14'),
-                _buildProfileCard(Icons.location_on, 'Location', 'Lviv, Ukraine'),
-                _buildProfileCard(Icons.cake, 'Birthday', '06 June 2005'),
+                isEditing
+                    ? _buildEditableField('Birthday', dobController)
+                    : _buildProfileCard(Icons.cake, 'Birthday', dobController.text),
+
+                isEditing
+                    ? _buildEditableField('Address', addressController)
+                    : _buildProfileCard(Icons.location_on, 'Location', addressController.text),
+
                 const SizedBox(height: 32),
+
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      if (isEditing) {
+                        _saveChanges();
+                      } else {
+                        setState(() => isEditing = true);
+                      }
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.greenAccent[400],
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      elevation: 6,
-                      shadowColor: Colors.greenAccent.withAlpha((0.6 * 255).round()),
                     ),
-                    child: const Text(
-                      'Edit Profile',
-                      style: TextStyle(fontSize: 16, color: Colors.black),
+                    child: Text(
+                      isEditing ? 'Save Changes' : 'Edit Profile',
+                      style: const TextStyle(fontSize: 16, color: Colors.black),
                     ),
                   ),
                 ),
@@ -124,25 +167,53 @@ class ProfilePage extends StatelessWidget {
           children: [
             Icon(icon, color: Colors.greenAccent, size: 28),
             const SizedBox(width: 16),
-            Flexible(
-              flex: 1,
+            Expanded(
               child: Text(
                 '$label:',
                 style: const TextStyle(color: Colors.white70, fontSize: 18),
               ),
             ),
-            const SizedBox(width: 8),
-            Flexible(
-              flex: 2,
+            Expanded(
               child: Text(
                 value,
                 style: const TextStyle(color: Colors.white54, fontSize: 18),
-                overflow: TextOverflow.visible,
                 textAlign: TextAlign.right,
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildEditableField(String label, TextEditingController controller) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: TextField(
+        controller: controller,
+        style: const TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(color: Colors.greenAccent),
+          filled: true,
+          fillColor: const Color(0xFF1E1E1E),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileText(String value, double size, {bool bold = false}) {
+    return Text(
+      value,
+      textAlign: TextAlign.center,
+      style: TextStyle(
+        fontSize: size,
+        fontWeight: bold ? FontWeight.bold : FontWeight.normal,
+        color: Colors.white,
       ),
     );
   }

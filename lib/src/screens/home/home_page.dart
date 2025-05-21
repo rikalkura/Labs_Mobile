@@ -1,116 +1,157 @@
 import 'package:flutter/material.dart';
-import '../../widget/action_buttons.dart';
-import '../../widget/weekly_chart.dart';
 
-class HomePage extends StatelessWidget {
+import '../../data/spider_scanner_storage.dart';
+import '../../models/spider_scanner.dart';
+
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isWide = screenWidth > 600;
-    final horizontalPadding = isWide ? screenWidth * 0.2 : 16.0;
+  State<HomePage> createState() => _HomePageState();
+}
 
+class _HomePageState extends State<HomePage> {
+  final SpiderScannerStorage storage = SpiderScannerStorage();
+  List<SpiderScanner> scanners = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadScanners();
+  }
+
+  Future<void> _loadScanners() async {
+    final list = await storage.getAll();
+    setState(() => scanners = list);
+  }
+
+  Future<void> _addScannerDialog() async {
+    final nameCtrl = TextEditingController();
+    final idCtrl = TextEditingController();
+
+    await showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Add Spider Scanner"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameCtrl,
+              decoration: const InputDecoration(labelText: "Name"),
+            ),
+            TextField(
+              controller: idCtrl,
+              decoration: const InputDecoration(labelText: "ID"),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Cancel")),
+          ElevatedButton(
+            onPressed: () async {
+              if (nameCtrl.text.isEmpty || idCtrl.text.isEmpty) return;
+              await storage.add(SpiderScanner(id: idCtrl.text, name: nameCtrl.text));
+              await _loadScanners();
+              Navigator.pop(ctx);
+            },
+            child: const Text("Add"),
+          )
+        ],
+      ),
+    );
+  }
+
+  Future<void> _editScannerDialog(SpiderScanner scanner) async {
+    final nameCtrl = TextEditingController(text: scanner.name);
+
+    await showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Edit Scanner"),
+        content: TextField(
+          controller: nameCtrl,
+          decoration: const InputDecoration(labelText: "New Name"),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Cancel")),
+          ElevatedButton(
+            onPressed: () async {
+              final updated = SpiderScanner(id: scanner.id, name: nameCtrl.text);
+              await storage.update(updated);
+              await _loadScanners();
+              Navigator.pop(ctx);
+            },
+            child: const Text("Save"),
+          )
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deleteScanner(String id) async {
+    await storage.delete(id);
+    await _loadScanners();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
-        automaticallyImplyLeading: false,
-        centerTitle: false,
-        title: InkWell(
-          onTap: () {
-            Navigator.pushNamed(context, '/profile');
-          },
-          child: Row(
-            children: const [
-              Icon(Icons.person, color: Colors.greenAccent, size: 32),
-              SizedBox(width: 8),
-              Text(
-                'Profile',
-                style: TextStyle(
-                  fontSize: 20,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w500,
+        title: const Text("Spider Scanners", style: TextStyle(color: Colors.greenAccent)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.person, color: Colors.greenAccent),
+            onPressed: () => Navigator.pushNamed(context, '/profile'),
+          )
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.greenAccent,
+        onPressed: _addScannerDialog,
+        child: const Icon(Icons.add, color: Colors.black),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            if (scanners.isEmpty)
+              const Center(
+                child: Text("No scanners added.",
+                    style: TextStyle(color: Colors.white54)),
+              ),
+            ...scanners.map((s) => Card(
+              color: const Color(0xFF1E1E1E),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              child: ListTile(
+                title: Text(s.name, style: const TextStyle(color: Colors.white)),
+                subtitle: Text("ID: ${s.id}", style: const TextStyle(color: Colors.white54)),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.bug_report, color: Colors.greenAccent),
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text("Scanning with ${s.name}..."),
+                        ));
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.edit, color: Colors.white70),
+                      onPressed: () => _editScannerDialog(s),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.redAccent),
+                      onPressed: () => _deleteScanner(s.id),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Spider Scan Status',
-              style: TextStyle(
-                fontSize: isWide ? 36 : 28,
-                fontWeight: FontWeight.w300,
-                letterSpacing: 1.2,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: const Color(0xFF1A1A1A),
-                borderRadius: BorderRadius.circular(28),
-              ),
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
-                      Icon(Icons.query_stats, color: Colors.white54, size: 26),
-                      Row(
-                        children: [
-                          Icon(Icons.notifications_none, color: Colors.white54, size: 26),
-                          SizedBox(width: 16),
-                          Icon(Icons.tune, color: Colors.white54, size: 26),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 32),
-                  const Text('Total Scans',
-                      style: TextStyle(fontSize: 18, color: Colors.white54)),
-                  const SizedBox(height: 16),
-                  Text(
-                    '174',
-                    style: TextStyle(
-                      fontSize: isWide ? 72 : 56,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  const WeeklyChart(values: [20, 45, 30, 60, 25, 40, 35]),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Last updated: 2 mins ago',
-                    style: TextStyle(color: Colors.white38, fontSize: 14),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 30),
-
-            Text(
-              'Actions',
-              style: TextStyle(
-                fontSize: isWide ? 22 : 18,
-                color: Colors.white70,
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            const ActionButtons(),
+            )),
           ],
         ),
       ),
