@@ -112,13 +112,13 @@ class _LoginPageState extends State<LoginPage> {
 
                             final savedUser = await storage.getUser();
                             if (savedUser == null) {
-                              setState(() => errorMessage = 'Користувача не знайдено. Зареєструйтесь.');
+                              setState(() => errorMessage = 'User is not found. Register');
                               return;
                             }
 
                             if (savedUser['email'] != enteredEmail ||
                                 savedUser['password'] != enteredPassword) {
-                              setState(() => errorMessage = 'Невірна пошта або пароль');
+                              setState(() => errorMessage = 'Incorrect email or password');
                               return;
                             }
 

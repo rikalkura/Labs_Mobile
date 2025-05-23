@@ -70,7 +70,6 @@ class _ProfilePageState extends State<ProfilePage> {
             icon: const Icon(Icons.logout_rounded, color: Colors.white),
             tooltip: 'Logout',
             onPressed: () {
-              storage.deleteUser();
               Navigator.pushNamedAndRemoveUntil(context, '/', (_) => false);
             },
           ),
