@@ -186,7 +186,6 @@ class _RegisterPageState extends State<RegisterPage> {
 
     setState(() => errorMessage = null);
 
-    // Збереження користувача
     await storage.saveUser({
       'name': name,
       'dob': dob,
@@ -195,7 +194,6 @@ class _RegisterPageState extends State<RegisterPage> {
       'password': password,
     });
 
-    // Перевіряємо, чи ще є контекст (widget у дереві)
     if (!mounted) return;
 
     Navigator.pushReplacementNamed(context, '/');
