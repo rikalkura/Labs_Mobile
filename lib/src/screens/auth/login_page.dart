@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-
 import '../../repo/implementation/user_repository_local.dart';
+import '../../services/connectivity_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -13,6 +13,7 @@ class _LoginPageState extends State<LoginPage> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final storage = SharedPrefsUserStorage();
+  final connectivity = ConnectivityService();
 
   String? errorMessage;
 
@@ -107,18 +108,32 @@ class _LoginPageState extends State<LoginPage> {
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: () async {
+                            final isOnline = await connectivity.isConnected();
+                            if (!isOnline) {
+                              if (!mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("No internet connection"),
+                                  backgroundColor: Colors.orange,
+                                ),
+                              );
+                              return;
+                            }
+
                             final enteredEmail = emailController.text.trim();
                             final enteredPassword = passwordController.text;
-
                             final savedUser = await storage.getUser();
+
+                            if (!mounted) return;
+
                             if (savedUser == null) {
-                              setState(() => errorMessage = 'Користувача не знайдено. Зареєструйтесь.');
+                              setState(() => errorMessage = 'User not found. Please register.');
                               return;
                             }
 
                             if (savedUser['email'] != enteredEmail ||
                                 savedUser['password'] != enteredPassword) {
-                              setState(() => errorMessage = 'Невірна пошта або пароль');
+                              setState(() => errorMessage = 'Incorrect email or password');
                               return;
                             }
 

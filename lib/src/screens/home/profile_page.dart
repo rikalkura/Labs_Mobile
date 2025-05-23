@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../../repo/implementation/user_repository_local.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -10,7 +9,7 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  final storage =   SharedPrefsUserStorage();
+  final storage = SharedPrefsUserStorage();
 
   Map<String, String>? userData;
 
@@ -29,6 +28,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _loadUser() async {
     final data = await storage.getUser();
+    if (!mounted) return;
     setState(() {
       userData = data;
       nameController.text = data?['name'] ?? '';
@@ -45,10 +45,35 @@ class _ProfilePageState extends State<ProfilePage> {
       'address': addressController.text.trim(),
       'email': emailController.text.trim(),
     });
-    setState(() {
-      isEditing = false;
-    });
+    if (!mounted) return;
+    setState(() => isEditing = false);
     await _loadUser();
+  }
+
+  Future<void> _confirmLogout() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Log out'),
+        content: const Text('Are you sure you want to log out?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Log out'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await storage.deleteUser();
+      if (!mounted) return;
+      Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
+    }
   }
 
   @override
@@ -69,10 +94,7 @@ class _ProfilePageState extends State<ProfilePage> {
           IconButton(
             icon: const Icon(Icons.logout_rounded, color: Colors.white),
             tooltip: 'Logout',
-            onPressed: () {
-              storage.deleteUser();
-              Navigator.pushNamedAndRemoveUntil(context, '/', (_) => false);
-            },
+            onPressed: _confirmLogout,
           ),
         ],
       ),
@@ -103,27 +125,21 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: const Icon(Icons.person_outline, size: 60, color: Colors.grey),
                 ),
                 const SizedBox(height: 20),
-
                 isEditing
                     ? _buildEditableField('Full Name', nameController)
                     : _buildProfileText(nameController.text, 28, bold: true),
-
                 const SizedBox(height: 8),
                 isEditing
                     ? _buildEditableField('Email', emailController)
                     : _buildProfileText(emailController.text, 16),
-
                 const SizedBox(height: 32),
                 isEditing
                     ? _buildEditableField('Birthday', dobController)
                     : _buildProfileCard(Icons.cake, 'Birthday', dobController.text),
-
                 isEditing
                     ? _buildEditableField('Address', addressController)
-                    : _buildProfileCard(Icons.location_on, 'Location', addressController.text),
-
+                    : _buildProfileCard(Icons.location_on, 'Address', addressController.text),
                 const SizedBox(height: 32),
-
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
