@@ -104,11 +104,14 @@ class _HomePageState extends State<HomePage> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Cancel")),
           ElevatedButton(
-            onPressed: () async {
+            onPressed: () {
               if (nameCtrl.text.isEmpty || idCtrl.text.isEmpty) return;
-              await storage.add(SpiderScanner(id: idCtrl.text, name: nameCtrl.text));
-              await _loadScanners();
-              Navigator.pop(ctx);
+              Navigator.of(ctx).pop(); // Закриваємо діалог перед async
+
+              storage.add(SpiderScanner(id: idCtrl.text, name: nameCtrl.text)).then((_) {
+                if (!mounted) return;
+                _loadScanners();
+              });
             },
             child: const Text("Add"),
           )
@@ -131,11 +134,14 @@ class _HomePageState extends State<HomePage> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Cancel")),
           ElevatedButton(
-            onPressed: () async {
+            onPressed: () {
               final updated = SpiderScanner(id: scanner.id, name: nameCtrl.text);
-              await storage.update(updated);
-              await _loadScanners();
-              Navigator.pop(ctx);
+              Navigator.of(ctx).pop(); // Закриваємо діалог перед async
+
+              storage.update(updated).then((_) {
+                if (!mounted) return;
+                _loadScanners();
+              });
             },
             child: const Text("Save"),
           )

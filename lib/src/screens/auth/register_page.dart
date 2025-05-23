@@ -114,41 +114,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () async {
-                            final name = nameController.text.trim();
-                            final dob = dobController.text.trim();
-                            final address = addressController.text.trim();
-                            final email = emailController.text.trim();
-                            final password = passwordController.text;
-
-                            final nameError = Validators.validateName(name);
-                            final emailError = Validators.validateEmail(email);
-                            final passwordError = Validators.validatePassword(password);
-
-                            if (nameError != null) {
-                              setState(() => errorMessage = nameError);
-                              return;
-                            }
-                            if (emailError != null) {
-                              setState(() => errorMessage = emailError);
-                              return;
-                            }
-                            if (passwordError != null) {
-                              setState(() => errorMessage = passwordError);
-                              return;
-                            }
-
-                            await storage.saveUser({
-                              'name': name,
-                              'dob': dob,
-                              'address': address,
-                              'email': email,
-                              'password': password,
-                            });
-
-                            setState(() => errorMessage = null);
-                            Navigator.pushReplacementNamed(context, '/');
-                          },
+                          onPressed: _onRegisterPressed,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.greenAccent[400],
                             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -192,6 +158,47 @@ class _RegisterPageState extends State<RegisterPage> {
         },
       ),
     );
+  }
+
+  Future<void> _onRegisterPressed() async {
+    final name = nameController.text.trim();
+    final dob = dobController.text.trim();
+    final address = addressController.text.trim();
+    final email = emailController.text.trim();
+    final password = passwordController.text;
+
+    final nameError = Validators.validateName(name);
+    final emailError = Validators.validateEmail(email);
+    final passwordError = Validators.validatePassword(password);
+
+    if (nameError != null) {
+      setState(() => errorMessage = nameError);
+      return;
+    }
+    if (emailError != null) {
+      setState(() => errorMessage = emailError);
+      return;
+    }
+    if (passwordError != null) {
+      setState(() => errorMessage = passwordError);
+      return;
+    }
+
+    setState(() => errorMessage = null);
+
+    // Збереження користувача
+    await storage.saveUser({
+      'name': name,
+      'dob': dob,
+      'address': address,
+      'email': email,
+      'password': password,
+    });
+
+    // Перевіряємо, чи ще є контекст (widget у дереві)
+    if (!mounted) return;
+
+    Navigator.pushReplacementNamed(context, '/');
   }
 
   Widget _buildTextField({
