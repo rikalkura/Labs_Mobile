@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:untitled/src/screens/home/qrcode_scan_page.dart';
+import 'package:untitled/src/screens/home/saved_message_page.dart';
 
 import '../../data/spider_scanner_storage.dart';
 import '../../models/spider_scanner.dart';
 import '../../services/connectivity_service.dart';
 import '../../services/mqtt_service.dart';
+import '../../services/usb_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -17,6 +20,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final SpiderScannerStorage storage = SpiderScannerStorage();
   final ConnectivityService connectivity = ConnectivityService();
+  final UsbSerialService usbService = UsbSerialService();
 
   late final MQTTClientWrapper mqtt;
 
@@ -106,8 +110,7 @@ class _HomePageState extends State<HomePage> {
           ElevatedButton(
             onPressed: () {
               if (nameCtrl.text.isEmpty || idCtrl.text.isEmpty) return;
-              Navigator.of(ctx).pop(); // Закриваємо діалог перед async
-
+              Navigator.of(ctx).pop();
               storage.add(SpiderScanner(id: idCtrl.text, name: nameCtrl.text)).then((_) {
                 if (!mounted) return;
                 _loadScanners();
@@ -136,8 +139,7 @@ class _HomePageState extends State<HomePage> {
           ElevatedButton(
             onPressed: () {
               final updated = SpiderScanner(id: scanner.id, name: nameCtrl.text);
-              Navigator.of(ctx).pop(); // Закриваємо діалог перед async
-
+              Navigator.of(ctx).pop();
               storage.update(updated).then((_) {
                 if (!mounted) return;
                 _loadScanners();
@@ -206,6 +208,38 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => QRScannerScreen(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.qr_code),
+                  label: const Text("Scan QR"),
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                ),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => MessageScreen(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.save_alt),
+                  label: const Text("Saved Msg"),
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
             if (scanners.isEmpty)
               const Expanded(
                 child: Center(
