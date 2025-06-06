@@ -37,7 +37,6 @@ class UsbSerialService {
     }
   }
 
-
   Future<void> send(String data) async {
     if (_port == null) {
       return;
@@ -56,7 +55,6 @@ class UsbSerialService {
         .transform(utf8.decoder as StreamTransformer<Uint8List, String>)
         .transform(const LineSplitter());
   }
-
 
   Future<void> disconnect() async {
     await _port?.close();

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/src/repo/implementation/user_repository_local.dart';
 import 'package:untitled/src/screens/auth/login_page.dart';
 import 'package:untitled/src/screens/auth/register_page.dart';
 import 'package:untitled/src/screens/home/home_page.dart';
 import 'package:untitled/src/screens/home/profile_page.dart';
-import 'package:untitled/src/repo/implementation/user_repository_local.dart';
 import 'package:untitled/src/services/connectivity_service.dart';
 
 void main() {
@@ -33,7 +33,8 @@ class MyApp extends StatelessWidget {
         future: _checkAuthAndInternet(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            return const Scaffold(body: Center(child: CircularProgressIndicator()));
+            return const Scaffold(
+                body: Center(child: CircularProgressIndicator()));
           }
 
           final (isLoggedIn, isOnline) = snapshot.data!;
@@ -49,14 +50,14 @@ class MyApp extends StatelessWidget {
             });
           }
 
-          return isLoggedIn ? const HomePage() : const LoginPage();
+          return isLoggedIn ?  HomePage() : LoginPage();
         },
       ),
       routes: {
-        '/login': (context) => const LoginPage(),
-        '/register': (context) => const RegisterPage(),
-        '/home': (context) => const HomePage(),
-        '/profile': (context) => const ProfilePage(),
+        '/login': (context) => LoginPage(),
+        '/register': (context) => RegisterPage(),
+        '/home': (context) =>  HomePage(),
+        '/profile': (context) =>  ProfilePage(),
       },
     );
   }

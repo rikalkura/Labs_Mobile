@@ -17,15 +17,20 @@ class ActionButtons extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12),
         child: Row(
           children: [
-            _buildActionButton(Icons.bug_report, 'Add Spider', iconSize, buttonFontSize, horizontalPadding),
+            _buildActionButton(Icons.bug_report, 'Add Spider', iconSize,
+                buttonFontSize, horizontalPadding),
             const SizedBox(width: 12),
-            _buildActionButton(Icons.sensors, 'Check Sensors', iconSize, buttonFontSize, horizontalPadding),
+            _buildActionButton(Icons.sensors, 'Check Sensors', iconSize,
+                buttonFontSize, horizontalPadding),
             const SizedBox(width: 12),
-            _buildActionButton(Icons.analytics, 'Create Report', iconSize, buttonFontSize, horizontalPadding),
+            _buildActionButton(Icons.analytics, 'Create Report', iconSize,
+                buttonFontSize, horizontalPadding),
             const SizedBox(width: 12),
-            _buildActionButton(Icons.cloud_download, 'Sync Data', iconSize, buttonFontSize, horizontalPadding),
+            _buildActionButton(Icons.cloud_download, 'Sync Data', iconSize,
+                buttonFontSize, horizontalPadding),
             const SizedBox(width: 12),
-            _buildActionButton(Icons.delete, 'Clear', iconSize, buttonFontSize, horizontalPadding),
+            _buildActionButton(Icons.delete, 'Clear', iconSize, buttonFontSize,
+                horizontalPadding),
           ],
         ),
       ),
@@ -33,12 +38,12 @@ class ActionButtons extends StatelessWidget {
   }
 
   Widget _buildActionButton(
-      IconData icon,
-      String label,
-      double iconSize,
-      double fontSize,
-      double paddingX,
-      ) {
+    IconData icon,
+    String label,
+    double iconSize,
+    double fontSize,
+    double paddingX,
+  ) {
     return ElevatedButton.icon(
       onPressed: () {},
       icon: Icon(icon, size: iconSize),

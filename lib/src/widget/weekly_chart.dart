@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class WeeklyChart extends StatelessWidget {
   final List<int> values;
+
   const WeeklyChart({super.key, required this.values});
 
   @override

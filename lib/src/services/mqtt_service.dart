@@ -1,10 +1,11 @@
 import 'dart:io';
-import 'package:flutter/foundation.dart'; // Для debugPrint
+
+import 'package:flutter/foundation.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
 
 typedef OnSensorData = void Function({
-int? sensor,
+  int? sensor,
 });
 
 enum MqttCurrentConnectionState {
@@ -39,7 +40,7 @@ class MQTTClientWrapper {
     this.username,
     this.password,
   }) : clientIdentifier = clientId ??
-      'flutter_client_${DateTime.now().millisecondsSinceEpoch}';
+            'flutter_client_${DateTime.now().millisecondsSinceEpoch}';
 
   Future<void> prepareMqttClient() async {
     if (_client == null) {
